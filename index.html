@@ -1,80 +1,87 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>We Were Here — AR Spear</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 
-  <!-- Keep these versions for iOS -->
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.min.js"></script>
+  <!-- AR.js for A-Frame (marker-based) -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; }
-    body { background:#000; font-family:sans-serif; }
-
-    /* Make sure the AR.js injected video is visible and fills the screen */
-    video#arjs-video, video.arjs-video {
-      position: fixed !important;
-      top: 0; left: 0;
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover;
-      z-index: -2;         /* behind the canvas */
-      background: #000;    /* fallback */
-    }
-
-    /* Make the WebGL canvas fill the screen and sit above the video */
-    canvas.a-canvas, .a-canvas canvas {
-      position: fixed !important;
-      top: 0; left: 0;
-      width: 100% !important;
-      height: 100% !important;
-      z-index: -1;
-    }
-
-    /* Make sure the scene itself fills */
-    a-scene {
-      position: fixed !important;
-      top: 0; left: 0;
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .hint {
-      position: fixed; left: 10px; bottom: 10px;
-      padding: 8px 10px; background: rgba(0,0,0,.6); color:#fff; z-index:10;
+    html, body { height:100%; margin:0; overflow:hidden; font-family: Arial, sans-serif; }
+    .ui {
+      position: absolute; top: 12px; left: 12px; z-index: 10;
+      background: rgba(255,255,255,0.9); padding:8px 10px; border-radius:6px;
+      font-size:14px; color:#111;
     }
   </style>
 </head>
 <body>
-  <a-scene
-    embedded
-    vr-mode-ui="enabled: false"
-    renderer="antialias:true; alpha:true; precision: mediump"
-    arjs="sourceType: webcam; facingMode: environment; debugUIEnabled: true; detectionMode: mono; matrixCodeType: 3x3"
-  >
-    <!-- Your custom handprint marker -->
-    <a-marker type="pattern" url="pattern-handprint-marker.patt">
-      <!-- Light -->
+  <div class="ui">
+    1) Allow camera access<br>
+    2) Point camera at the printed marker<br>
+    3) Tap the spear to rotate
+  </div>
+
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <!-- marker (use hiro for testing or replace with your .patt marker url) -->
+    <a-marker preset="hiro">
+      <!-- a basic directional light (optional — MeshBasicMaterial ignores it) -->
       <a-entity light="type: directional; intensity: 1" position="0 2 2"></a-entity>
 
-      <!-- Spear GLB model -->
+      <!-- spear model: note the component 'unlit-on-load' added -->
       <a-entity id="spear"
                 gltf-model="url(spear.glb)"
-                position="0 0 0"
+                position="0 0.5 0"
                 rotation="0 90 0"
-                scale="0.6 0.6 0.6"
-                animation="property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.05 0">
+                scale="0.05 0.05 0.05"
+                animation="property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.05 0"
+                unlit-on-load>
       </a-entity>
     </a-marker>
 
     <a-entity camera></a-entity>
   </a-scene>
 
-  <div class="hint">Point at the printed <b>handprint</b> marker.</div>
-
   <script>
+    // Component that replaces PBR materials with unlit (basic) materials on model-load
+    AFRAME.registerComponent('unlit-on-load', {
+      init: function () {
+        this.el.addEventListener('model-loaded', (evt) => {
+          const model = evt.detail.model; // THREE.Object3D
+          model.traverse((node) => {
+            if (!node.isMesh) return;
+
+            // handle multi-materials (array) and single material
+            const oldMaterials = Array.isArray(node.material) ? node.material : [node.material];
+
+            // create new materials array (or single) using the original textures if present
+            const newMats = oldMaterials.map((m) => {
+              // if original material had a map (texture), reuse it; otherwise use its color
+              const map = m && m.map ? m.map : null;
+              const color = (m && m.color) ? m.color.clone() : null;
+
+              if (map) {
+                return new AFRAME.THREE.MeshBasicMaterial({ map: map, side: AFRAME.THREE.DoubleSide });
+              } else if (color) {
+                return new AFRAME.THREE.MeshBasicMaterial({ color: color, side: AFRAME.THREE.DoubleSide });
+              } else {
+                return new AFRAME.THREE.MeshBasicMaterial({ color: 0x999999, side: AFRAME.THREE.DoubleSide });
+              }
+            });
+
+            // assign back (single or array)
+            node.material = (newMats.length === 1) ? newMats[0] : newMats;
+            node.material.needsUpdate = true;
+          });
+        });
+      }
+    });
+
+    // small tap-to-spin helper
     document.addEventListener('click', function () {
       const spear = document.querySelector('#spear');
       if (!spear) return;
