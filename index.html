@@ -27,12 +27,9 @@
   </div>
 
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-    <!-- Use your custom pattern marker file -->
-     <a-marker preset="hiro">
-      <!-- subtle light -->
+    <!-- Use your custom pattern marker -->
+    <a-marker type="pattern" url="handprint-marker.patt">
       <a-entity light="type: directional; intensity: 1" position="0 2 2"></a-entity>
-
-      <!-- floating animation + glb model -->
       <a-entity id="spear"
                 gltf-model="url(spear.glb)"
                 position="0 0 0"
@@ -45,8 +42,7 @@
   </a-scene>
 
   <script>
-    document.addEventListener('click', function (evt) {
-      // if user taps anywhere while model is visible, rotate it for effect
+    document.addEventListener('click', function () {
       const spear = document.querySelector('#spear');
       if (!spear) return;
       spear.setAttribute('animation__spin', 'property: rotation; to: 0 450 0; dur: 1600; easing: linear; loop: false');
@@ -54,5 +50,3 @@
   </script>
 </body>
 </html>
-
-
