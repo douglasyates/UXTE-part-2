@@ -69,4 +69,23 @@
 
       <!-- Spear GLB model -->
       <a-entity id="spear"
-                gltf-model="url
+                gltf-model="url(spear.glb)"
+                position="0 0 0"
+                rotation="0 90 0"
+                scale="0.6 0.6 0.6"
+                animation="property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.05 0">
+      </a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener('click', function () {
+      const spear = document.querySelector('#spear');
+      if (!spear) return;
+      spear.setAttribute('animation__spin', 'property: rotation; to: 0 450 0; dur: 1600; easing: linear; loop: false');
+    });
+  </script>
+</body>
+</html>
