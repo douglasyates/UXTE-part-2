@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>We Were Here — AR Spear</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <!-- AR.js for A-Frame (marker-based) -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    html, body { height:100%; margin:0; overflow:hidden; font-family: Arial, sans-serif; }
+    .ui {
+      position: absolute; top: 12px; left: 12px; z-index: 10;
+      background: rgba(255,255,255,0.9); padding:8px 10px; border-radius:6px;
+      font-size:14px; color:#111;
+    }
+  </style>
+</head>
+<body>
+  <div class="ui">
+    1) Allow camera access<br>
+    2) Point camera at the printed handprint marker<br>
+    3) Tap the spear to rotate
+  </div>
+
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <!-- Use your custom pattern marker file -->
+    <a-marker type="pattern" url="handprint-marker.patt">
+      <!-- subtle light -->
+      <a-entity light="type: directional; intensity: 1" position="0 2 2"></a-entity>
+
+      <!-- floating animation + glb model -->
+      <a-entity id="spear"
+                gltf-model="url(SPEAR.glb)"
+                position="0 0 0"
+                rotation="0 90 0"
+                scale="0.6 0.6 0.6"
+                animation="property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.05 0">
+      </a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener('click', function (evt) {
+      // if user taps anywhere while model is visible, rotate it for effect
+      const spear = document.querySelector('#spear');
+      if (!spear) return;
+      spear.setAttribute('animation__spin', 'property: rotation; to: 0 450 0; dur: 1600; easing: linear; loop: false');
+    });
+  </script>
+</body>
+</html>
