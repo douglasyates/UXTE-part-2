@@ -1,61 +1,53 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta charset="utf-8">
   <title>We Were Here — AR Spear</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 
-  <!-- A-Frame -->
+  <!-- Keep these versions for iOS -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <!-- AR.js for A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.min.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; font-family: Arial, sans-serif; }
-    body { background:#000; }
+    html, body { margin:0; height:100%; }
+    body { background:#000; font-family:sans-serif; }
 
-    /* AR.js camera video */
+    /* Make sure the AR.js injected video is visible and fills the screen */
     video#arjs-video, video.arjs-video {
       position: fixed !important;
-      top:0; left:0;
-      width:100% !important;
-      height:100% !important;
+      top: 0; left: 0;
+      width: 100% !important;
+      height: 100% !important;
       object-fit: cover;
-      z-index:-2;
-      background:#000;
+      z-index: -2;         /* behind the canvas */
+      background: #000;    /* fallback */
     }
 
-    /* WebGL canvas */
+    /* Make the WebGL canvas fill the screen and sit above the video */
     canvas.a-canvas, .a-canvas canvas {
       position: fixed !important;
-      top:0; left:0;
-      width:100% !important;
-      height:100% !important;
-      z-index:-1;
+      top: 0; left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: -1;
     }
 
+    /* Make sure the scene itself fills */
     a-scene {
       position: fixed !important;
-      top:0; left:0;
-      width:100% !important;
-      height:100% !important;
+      top: 0; left: 0;
+      width: 100% !important;
+      height: 100% !important;
     }
 
-    .ui {
-      position: fixed; top:12px; left:12px;
-      background: rgba(255,255,255,0.9);
-      padding: 8px 10px; border-radius:6px;
-      font-size:14px; color:#111; z-index:10;
+    .hint {
+      position: fixed; left: 10px; bottom: 10px;
+      padding: 8px 10px; background: rgba(0,0,0,.6); color:#fff; z-index:10;
     }
   </style>
 </head>
 <body>
-  <div class="ui">
-    1) Allow camera access<br>
-    2) Point camera at the printed handprint marker<br>
-    3) Tap the spear to rotate
-  </div>
-
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
@@ -79,6 +71,8 @@
 
     <a-entity camera></a-entity>
   </a-scene>
+
+  <div class="hint">Point at the printed <b>handprint</b> marker.</div>
 
   <script>
     document.addEventListener('click', function () {
