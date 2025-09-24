@@ -27,19 +27,30 @@
   </div>
 
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-    <!-- marker (use hiro for testing or replace with your .patt marker url) -->
+    <!-- Marker -->
     <a-marker preset="hiro">
-      <!-- a basic directional light (optional — MeshBasicMaterial ignores it) -->
-      <a-entity light="type: directional; intensity: 1" position="0 2 2"></a-entity>
+      <!-- Add ambient + directional lights -->
+      <a-entity light="type: ambient; intensity: 1"></a-entity>
+      <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
+      <a-entity light="type: directional; intensity: 0.5" position="-1 2 -1"></a-entity>
 
-      <!-- spear model: note the component 'unlit-on-load' added -->
+      <!-- Spear model with VO -->
       <a-entity id="spear"
                 gltf-model="url(spear.glb)"
                 position="0 0.5 0"
                 rotation="0 90 0"
                 scale="0.05 0.05 0.05"
-                animation="property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.05 0"
-                unlit-on-load>
+                animation="property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.05 0">
+
+        <!-- Voiceover audio -->
+        <a-sound src="url(Vo spear.mp3)"
+                 autoplay="true"
+                 on="markerFound"
+                 positional="true"
+                 volume="1"
+                 fade="2000">
+        </a-sound>
+
       </a-entity>
     </a-marker>
 
@@ -47,45 +58,13 @@
   </a-scene>
 
   <script>
-    // Component that replaces PBR materials with unlit (basic) materials on model-load
-    AFRAME.registerComponent('unlit-on-load', {
-      init: function () {
-        this.el.addEventListener('model-loaded', (evt) => {
-          const model = evt.detail.model; // THREE.Object3D
-          model.traverse((node) => {
-            if (!node.isMesh) return;
-
-            // handle multi-materials (array) and single material
-            const oldMaterials = Array.isArray(node.material) ? node.material : [node.material];
-
-            // create new materials array (or single) using the original textures if present
-            const newMats = oldMaterials.map((m) => {
-              // if original material had a map (texture), reuse it; otherwise use its color
-              const map = m && m.map ? m.map : null;
-              const color = (m && m.color) ? m.color.clone() : null;
-
-              if (map) {
-                return new AFRAME.THREE.MeshBasicMaterial({ map: map, side: AFRAME.THREE.DoubleSide });
-              } else if (color) {
-                return new AFRAME.THREE.MeshBasicMaterial({ color: color, side: AFRAME.THREE.DoubleSide });
-              } else {
-                return new AFRAME.THREE.MeshBasicMaterial({ color: 0x999999, side: AFRAME.THREE.DoubleSide });
-              }
-            });
-
-            // assign back (single or array)
-            node.material = (newMats.length === 1) ? newMats[0] : newMats;
-            node.material.needsUpdate = true;
-          });
-        });
-      }
-    });
-
-    // small tap-to-spin helper
+    // Tap to spin spear
     document.addEventListener('click', function () {
       const spear = document.querySelector('#spear');
       if (!spear) return;
-      spear.setAttribute('animation__spin', 'property: rotation; to: 0 450 0; dur: 1600; easing: linear; loop: false');
+      spear.setAttribute('animation__spin',
+        'property: rotation; to: 0 450 0; dur: 1600; easing: linear; loop: false'
+      );
     });
   </script>
 </body>
